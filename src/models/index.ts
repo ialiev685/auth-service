@@ -10,9 +10,11 @@ export const UserModel = sequelize.define("User", {
   email: {
     type: DataTypes.STRING,
     unique: true,
+    allowNull: false,
   },
   password: {
     type: DataTypes.STRING,
+    allowNull: false,
   },
   role: {
     type: DataTypes.ENUM("user", "admin"),
@@ -35,6 +37,7 @@ export const TokenModel = sequelize.define("Token", {
   },
   refreshToken: {
     type: DataTypes.STRING,
+    allowNull: false,
   },
 });
 
