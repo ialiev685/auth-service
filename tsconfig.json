@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    // Версия JS на выходе (для Node.js 18+)
+    "target": "ES2022",
+    // Система модулей (ES Modules)
+    "module": "NodeNext",
+    // Алгоритм поиска модулей
+    "moduleResolution": "NodeNext",
+    // Доступные встроенные API
+    "lib": ["ES2022"],
+    // Папка для скомпилированных файлов
+    "outDir": "./dist",
+    // Корень с исходниками
+    "rootDir": "./src",
+    // Все строгие проверки типов
+    "strict": true,
+    // Совместимость с CommonJS
+    "esModuleInterop": true,
+    // Пропуск типов в node_modules (быстрее)
+    "skipLibCheck": true,
+    // Единый регистр в именах файлов
+    "forceConsistentCasingInFileNames": true,
+    // Импорт JSON файлов
+    "resolveJsonModule": true,
+    // Карты кода для отладки
+    "sourceMap": true,
+    // Генерация .d.ts (типы)
+    "declaration": true,
+    // Карты для .d.ts
+    "declarationMap": true,
+    // Удалить комментарии из сборки
+    "removeComments": true,
+    // Ошибка на неиспользуемые переменные
+    "noUnusedLocals": true,
+    // Ошибка на неиспользуемые параметры
+    "noUnusedParameters": true,
+    // Функция должна всегда возвращать значение
+    "noImplicitReturns": true,
+    // Запрет проваливания в switch
+    "noFallthroughCasesInSwitch": true,
+    // Безопасный доступ к массивам (arr[0] может быть undefined)
+    "noUncheckedIndexedAccess": true,
+    // Строгая проверка опциональных полей
+    "exactOptionalPropertyTypes": true
+  },
+  // Какие файлы компилировать
+  "include": ["src/**/*"],
+  // Какие файлы исключить
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}
