@@ -1,45 +1,88 @@
 import { sequelize } from "../db";
-import { DataTypes } from "sequelize";
+import type {
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from "sequelize";
+import { DataTypes, Model } from "sequelize";
 
-export const UserModel = sequelize.define("User", {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  email: {
-    type: DataTypes.STRING,
-    unique: true,
-    allowNull: false,
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  role: {
-    type: DataTypes.ENUM("user", "admin"),
-    defaultValue: "user",
-  },
-  isActivate: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
-});
+export class UserModel extends Model<
+  InferAttributes<UserModel>,
+  InferCreationAttributes<UserModel>
+> {
+  declare id: CreationOptional<number>;
+  declare email: string;
+  declare password: string;
+  declare role: CreationOptional<"user" | "admin">;
+  declare isActivate: CreationOptional<boolean>;
+}
 
-export const TokenModel = sequelize.define("Token", {
-  userId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: UserModel,
-      key: "id",
+UserModel.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    role: {
+      type: DataTypes.ENUM("user", "admin"),
+      defaultValue: "user",
+    },
+    isActivate: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
-  refreshToken: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
+  { sequelize, modelName: "User" },
+);
 
-UserModel.hasOne(TokenModel, { onDelete: "CASCADE" });
-TokenModel.belongsTo(UserModel);
+export class TokenModel extends Model<
+  InferAttributes<TokenModel>,
+  InferCreationAttributes<TokenModel>
+> {
+  declare id: CreationOptional<number>;
+  declare userId: number;
+  declare refreshToken: string;
+}
+
+TokenModel.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      unique: true,
+      allowNull: false,
+      references: {
+        model: UserModel,
+        key: "id",
+      },
+    },
+    refreshToken: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    sequelize,
+    modelName: "Token",
+  },
+);
+
+UserModel.hasOne(TokenModel, {
+  onDelete: "CASCADE",
+  foreignKey: "userId",
+});
+TokenModel.belongsTo(UserModel, { foreignKey: "userId" });
