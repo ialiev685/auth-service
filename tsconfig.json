@@ -3,9 +3,9 @@
     // Версия JS на выходе (для Node.js 18+)
     "target": "ES2022",
     // Система модулей (ES Modules)
-    "module": "NodeNext",
+    "module": "esnext",
     // Алгоритм поиска модулей
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "bundler",
     // Доступные встроенные API
     "lib": ["ES2022"],
     // Папка для скомпилированных файлов

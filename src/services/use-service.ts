@@ -1,4 +1,4 @@
-import { TokenModel, UserModel } from "../models";
+import { UserModel } from "../models";
 import bcrypt from "bcrypt";
 import { UserDto } from "../dto/user";
 import { generateToken } from "../utils/generateToken";
