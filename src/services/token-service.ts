@@ -17,6 +17,11 @@ class TokenService {
     return createdToken.refreshToken;
   }
 
+  async findToken(refreshToken: string) {
+    const foundToken = await TokenModel.findOne({ where: { refreshToken } });
+    return foundToken;
+  }
+
   generateToken(userDto: UserDto) {
     const refreshToken = jwt.sign({ ...userDto }, REFRESH_TOKEN, {
       expiresIn: "5Min",

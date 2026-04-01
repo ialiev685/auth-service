@@ -1,6 +1,6 @@
 import { UserModel } from "../models";
 import bcrypt from "bcrypt";
-import { UserDto } from "../dto/user";
+import { isUserDto, UserDto } from "../dto/user";
 import { ApiError } from "../exception/api-errors";
 import { tokenService } from "./token-service";
 
@@ -40,6 +40,29 @@ class UserService {
     await tokenService.saveToken(user.id, refreshToken);
 
     return { ...user, accessToken, refreshToken };
+  }
+
+  async refresh(refreshToken: string) {
+    const decodedToken = tokenService.verifyRefreshToken(refreshToken);
+    const foundToken = tokenService.findToken(refreshToken);
+
+    if (!decodedToken || !foundToken) {
+      throw ApiError.UnauthorizedError();
+    }
+
+    if (!isUserDto(decodedToken)) {
+      throw ApiError.UnauthorizedError();
+    }
+    const foundUser = await UserModel.findOne({
+      where: { id: decodedToken.id },
+    });
+    if (!foundUser) {
+      throw ApiError.UnauthorizedError();
+    }
+    const userDto = new UserDto(foundUser);
+    const tokens = tokenService.generateToken(userDto);
+    await tokenService.saveToken(userDto.id, tokens.refreshToken);
+    return { ...userDto, ...tokens };
   }
 
   async getUser(userDto?: UserDto | null) {
