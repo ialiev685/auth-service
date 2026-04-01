@@ -12,7 +12,7 @@ export class ApiError extends Error {
     return new ApiError(400, message);
   }
 
-  static Unauthorized(message: string) {
-    return new ApiError(401, message);
+  static Unauthorized() {
+    return new ApiError(401, "Пользователь не авторизован");
   }
 }
