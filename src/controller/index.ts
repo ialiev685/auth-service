@@ -43,6 +43,9 @@ class Controller {
 
   async refresh(req: Request, res: Response) {
     const refreshToken = req.cookies[REFRESH_TOKEN_KEY];
+    if (!refreshToken) {
+      throw ApiError.UnauthorizedError();
+    }
     const { refreshToken: newRefreshToken, ...userData } =
       await userService.refresh(refreshToken);
     this.setRefreshTokenCookie(res, newRefreshToken);
