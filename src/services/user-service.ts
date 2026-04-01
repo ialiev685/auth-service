@@ -8,7 +8,7 @@ class UserService {
   async register(email: string, password: string) {
     const foundUser = await UserModel.findOne({ where: { email } });
     if (foundUser) {
-      throw ApiError.BadRequestError(`Пользователь с ${email} уже существует`);
+      throw ApiError.BadRequestError(`Пользователь ${email} уже существует`);
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const createdUser = await UserModel.create({
@@ -26,7 +26,7 @@ class UserService {
     const foundUser = await UserModel.findOne({ where: { email } });
 
     if (!foundUser) {
-      throw ApiError.BadRequestError(`Пользователь с ${email} не найден`);
+      throw ApiError.BadRequestError(`Пользователь ${email} не найден`);
     }
     const resultCheckPassword = await bcrypt.compare(
       password,
