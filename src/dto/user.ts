@@ -13,3 +13,7 @@ export class UserDto {
     this.role = userModel.role;
   }
 }
+
+export const isUserDto = (value: unknown): value is UserDto => {
+  return typeof value === "object" && value !== null && "email" in value;
+};

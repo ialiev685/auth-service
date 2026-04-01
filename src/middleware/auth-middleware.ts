@@ -1,11 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { ApiError } from "../exception/api-errors";
-import type { UserDto } from "../dto/user";
+import { isUserDto } from "../dto/user";
 import { tokenService } from "../services/token-service";
-
-const isUser = (value: unknown): value is UserDto => {
-  return typeof value === "object" && value !== null && "email" in value;
-};
 
 export const authMiddleware = async (
   req: Request,
@@ -20,7 +16,7 @@ export const authMiddleware = async (
     }
     const decodedToken = tokenService.verifyAccessToken(token);
 
-    if (isUser(decodedToken)) {
+    if (isUserDto(decodedToken)) {
       req.user = decodedToken;
       return next();
     }
