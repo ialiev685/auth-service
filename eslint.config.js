@@ -32,6 +32,7 @@ export default defineConfig(
         {
           argsIgnorePattern: "^_",
           varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
         },
       ],
       "@typescript-eslint/consistent-type-imports": "error",
