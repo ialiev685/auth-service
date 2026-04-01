@@ -1,7 +1,6 @@
 import { UserModel } from "../models";
 import bcrypt from "bcrypt";
 import { UserDto } from "../dto/user";
-import { generateToken } from "../utils/generateToken";
 import { ApiError } from "../exception/api-errors";
 import { tokenService } from "./token-service";
 
@@ -9,7 +8,7 @@ class UserService {
   async register(email: string, password: string) {
     const foundUser = await UserModel.findOne({ where: { email } });
     if (foundUser) {
-      throw ApiError.BadRequest(`Пользователь с ${email} уже существует`);
+      throw ApiError.BadRequestError(`Пользователь с ${email} уже существует`);
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const createdUser = await UserModel.create({
@@ -17,8 +16,7 @@ class UserService {
       password: hashedPassword,
     });
     const user = new UserDto(createdUser);
-    const accessToken = generateToken(user, "30Sec");
-    const refreshToken = generateToken(user, "5Min");
+    const { accessToken, refreshToken } = tokenService.generateToken(user);
     await tokenService.saveToken(user.id, refreshToken);
 
     return { ...user, accessToken, refreshToken };
@@ -28,21 +26,32 @@ class UserService {
     const foundUser = await UserModel.findOne({ where: { email } });
 
     if (!foundUser) {
-      throw ApiError.BadRequest(`Пользователь с ${email} не найден`);
+      throw ApiError.BadRequestError(`Пользователь с ${email} не найден`);
     }
     const resultCheckPassword = await bcrypt.compare(
       password,
       foundUser.password,
     );
     if (!resultCheckPassword) {
-      throw ApiError.BadRequest("Неверный логин или пароль");
+      throw ApiError.BadRequestError("Неверный логин или пароль");
     }
     const user = new UserDto(foundUser);
-    const accessToken = generateToken(user, "30Sec");
-    const refreshToken = generateToken(user, "5Min");
+    const { accessToken, refreshToken } = tokenService.generateToken(user);
     await tokenService.saveToken(user.id, refreshToken);
 
     return { ...user, accessToken, refreshToken };
+  }
+
+  async getUser(userDto?: UserDto | null) {
+    if (!userDto) {
+      throw ApiError.UnauthorizedError();
+    }
+    const foundUser = await UserModel.findOne({ where: { id: userDto.id } });
+    if (!foundUser) {
+      throw ApiError.UnauthorizedError();
+    }
+
+    return new UserDto(foundUser);
   }
 }
 
