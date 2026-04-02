@@ -20,17 +20,21 @@ class MailService {
     });
   }
 
-  public send = async (email: string) => {
+  public send = async (email: string, activationLink: string) => {
     try {
       const result = await this.transporter.sendMail({
-        from: process.env.MAIL_USER1,
+        from: process.env.MAIL_USER,
         to: email,
-        subject: "Подтвердите почту",
-        html: "<b>Hello world?</b>",
+        subject: `Активация на ${process.env.HOST}`,
+        html: `<div>
+                    <h2><b>Для активации перейдите по ссылке:</b></h2>
+                    <a href="${activationLink}">${activationLink}</a>
+                </div>`,
       });
 
       return result.accepted;
-    } catch (_error) {
+    } catch (error) {
+      console.log("nodemailer error", error);
       return [];
     }
   };

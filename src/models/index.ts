@@ -15,6 +15,7 @@ export class UserModel extends Model<
   declare password: string;
   declare role: CreationOptional<"user" | "admin">;
   declare isActivate: CreationOptional<boolean>;
+  declare activationLink: string | null;
 }
 
 UserModel.init(
@@ -40,6 +41,10 @@ UserModel.init(
     isActivate: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    activationLink: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   { sequelize, modelName: "User" },

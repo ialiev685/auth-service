@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { userService } from "../services/user-service";
 import { validationResult } from "express-validator";
 import { ApiError } from "../exception/api-errors";
-import { mailService } from "../services/mail-service";
+
 const REFRESH_TOKEN_KEY = "refreshToken";
 
 class Controller {
@@ -34,6 +34,13 @@ class Controller {
 
     this.setRefreshTokenCookie(res, refreshToken);
     return res.status(201).json(userData);
+  };
+
+  public activate = async (req: Request, res: Response) => {
+    const activationLink =
+      typeof req.params.link === "string" ? req.params.link : "";
+    await userService.activate(activationLink);
+    res.redirect("http://ya.ru");
   };
 
   public login = async (req: Request, res: Response) => {
