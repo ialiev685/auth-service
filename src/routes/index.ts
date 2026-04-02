@@ -12,12 +12,7 @@ router.post(
   body("password").isLength({ min: 8 }),
   errorHandler(controller.register),
 );
-router.post(
-  "/login",
-  body("email").isEmail(),
-  body("password").isLength({ min: 8 }),
-  errorHandler(controller.login),
-);
+router.post("/login", body("email").isEmail(), errorHandler(controller.login));
 router.post("/refresh", errorHandler(controller.refresh));
 router.get(
   "/currentUser",

@@ -5,7 +5,7 @@ import { ApiError } from "../exception/api-errors";
 import { tokenService } from "./token-service";
 
 class UserService {
-  public async register(email: string, password: string) {
+  public register = async (email: string, password: string) => {
     const foundUser = await UserModel.findOne({ where: { email } });
     if (foundUser) {
       throw ApiError.BadRequestError(`Пользователь ${email} уже существует`);
@@ -20,9 +20,9 @@ class UserService {
     await tokenService.saveToken(user.id, refreshToken);
 
     return { ...user, accessToken, refreshToken };
-  }
+  };
 
-  public async login(email: string, password: string) {
+  public login = async (email: string, password: string) => {
     const foundUser = await UserModel.findOne({ where: { email } });
 
     if (!foundUser) {
@@ -40,9 +40,9 @@ class UserService {
     await tokenService.saveToken(user.id, refreshToken);
 
     return { ...user, accessToken, refreshToken };
-  }
+  };
 
-  public async refresh(refreshToken: string) {
+  public refresh = async (refreshToken: string) => {
     const decodedToken = tokenService.verifyRefreshToken(refreshToken);
     const foundToken = tokenService.findToken(refreshToken);
 
@@ -63,16 +63,16 @@ class UserService {
     const tokens = tokenService.generateToken(userDto);
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
     return { ...userDto, ...tokens };
-  }
+  };
 
-  public async getUser(userDto: UserDto) {
+  public getUser = async (userDto: UserDto) => {
     const foundUser = await UserModel.findOne({ where: { id: userDto.id } });
     if (!foundUser) {
       throw ApiError.UnauthorizedError();
     }
 
     return new UserDto(foundUser);
-  }
+  };
 }
 
 export const userService = new UserService();
