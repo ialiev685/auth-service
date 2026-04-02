@@ -2,14 +2,14 @@ import type { Request, Response } from "express";
 import { userService } from "../services/user-service";
 import { validationResult } from "express-validator";
 import { ApiError } from "../exception/api-errors";
-
-const REFRESH_TOKEN_KEY = "refreshToken";
+import { REDIRECT_PARAM } from "../routes";
 
 class Controller {
   private readonly REFRESH_TOKEN_AGE = 1000 * 60 * 5;
+  private readonly REFRESH_TOKEN_KEY = "refreshToken";
 
   private setRefreshTokenCookie = (res: Response, refreshToken: string) => {
-    res.cookie(REFRESH_TOKEN_KEY, refreshToken, {
+    res.cookie(this.REFRESH_TOKEN_KEY, refreshToken, {
       httpOnly: true,
       maxAge: this.REFRESH_TOKEN_AGE,
       path: "/refresh",
@@ -27,11 +27,14 @@ class Controller {
   public register = async (req: Request, res: Response) => {
     this.validateRequest.bind(this)(req);
     const { email, password } = req.body;
+    const redirectParam = req.query[REDIRECT_PARAM];
+    const redirectUrl =
+      typeof redirectParam === "string" ? redirectParam : undefined;
     const { refreshToken, ...userData } = await userService.register(
       email,
       password,
+      redirectUrl,
     );
-
     this.setRefreshTokenCookie(res, refreshToken);
     return res.status(201).json(userData);
   };
@@ -39,8 +42,22 @@ class Controller {
   public activate = async (req: Request, res: Response) => {
     const activationLink =
       typeof req.params.link === "string" ? req.params.link : "";
+    const redirectLink = req.query[REDIRECT_PARAM];
     await userService.activate(activationLink);
-    res.redirect("http://ya.ru");
+
+    if (typeof redirectLink === "string") {
+      return res.redirect(
+        !redirectLink.startsWith("http")
+          ? "http://" + redirectLink
+          : redirectLink,
+      );
+    }
+
+    res
+      .status(200)
+      .send(
+        `<h2 style="display: flex; justify-content: center;">✅ Активация прошла успешно!</h2>`,
+      );
   };
 
   public login = async (req: Request, res: Response) => {
@@ -56,7 +73,7 @@ class Controller {
   };
 
   public refresh = async (req: Request, res: Response) => {
-    const refreshToken = req.cookies[REFRESH_TOKEN_KEY];
+    const refreshToken = req.cookies[this.REFRESH_TOKEN_KEY];
     if (!refreshToken) {
       throw ApiError.UnauthorizedError();
     }

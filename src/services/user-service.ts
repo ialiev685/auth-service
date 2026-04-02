@@ -7,7 +7,11 @@ import { v4 as uuidv4 } from "uuid";
 import { mailService } from "./mail-service";
 
 class UserService {
-  public register = async (email: string, password: string) => {
+  public register = async (
+    email: string,
+    password: string,
+    redirect?: string,
+  ) => {
     const foundUser = await UserModel.findOne({ where: { email } });
     if (foundUser) {
       throw ApiError.BadRequestError(`Пользователь ${email} уже существует`);
@@ -19,9 +23,10 @@ class UserService {
       password: hashedPassword,
       activationLink,
     });
+    const redirectLink = redirect ? `?redirect=${redirect}` : "";
     await mailService.send(
       email,
-      `${process.env.HOST}/api/v1/activate/${activationLink}`,
+      `${process.env.HOST}/api/v1/activate/${activationLink}${redirectLink}`,
     );
     const user = new UserDto(createdUser);
     const { accessToken, refreshToken } = tokenService.generateToken(user);
@@ -45,6 +50,9 @@ class UserService {
 
     if (!foundUser) {
       throw ApiError.BadRequestError(`Пользователь ${email} не найден`);
+    }
+    if (!foundUser.isActivate) {
+      throw ApiError.ForbiddenError("Аккаунт не активирован");
     }
     const resultCheckPassword = await bcrypt.compare(
       password,

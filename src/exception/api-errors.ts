@@ -15,4 +15,8 @@ export class ApiError<T> extends Error {
   static UnauthorizedError() {
     return new ApiError(401, "Пользователь не авторизован");
   }
+
+  static ForbiddenError(message: string) {
+    return new ApiError(403, message);
+  }
 }
