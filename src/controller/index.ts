@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { userService } from "../services/user-service";
 import { validationResult } from "express-validator";
 import { ApiError } from "../exception/api-errors";
+import { mailService } from "../services/mail-service";
 const REFRESH_TOKEN_KEY = "refreshToken";
 
 class Controller {
