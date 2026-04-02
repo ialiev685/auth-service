@@ -5,7 +5,7 @@ import { ApiError } from "../exception/api-errors";
 import { tokenService } from "./token-service";
 
 class UserService {
-  async register(email: string, password: string) {
+  public async register(email: string, password: string) {
     const foundUser = await UserModel.findOne({ where: { email } });
     if (foundUser) {
       throw ApiError.BadRequestError(`Пользователь ${email} уже существует`);
@@ -22,7 +22,7 @@ class UserService {
     return { ...user, accessToken, refreshToken };
   }
 
-  async login(email: string, password: string) {
+  public async login(email: string, password: string) {
     const foundUser = await UserModel.findOne({ where: { email } });
 
     if (!foundUser) {
@@ -42,7 +42,7 @@ class UserService {
     return { ...user, accessToken, refreshToken };
   }
 
-  async refresh(refreshToken: string) {
+  public async refresh(refreshToken: string) {
     const decodedToken = tokenService.verifyRefreshToken(refreshToken);
     const foundToken = tokenService.findToken(refreshToken);
 
@@ -65,10 +65,7 @@ class UserService {
     return { ...userDto, ...tokens };
   }
 
-  async getUser(userDto?: UserDto | null) {
-    if (!userDto) {
-      throw ApiError.UnauthorizedError();
-    }
+  public async getUser(userDto: UserDto) {
     const foundUser = await UserModel.findOne({ where: { id: userDto.id } });
     if (!foundUser) {
       throw ApiError.UnauthorizedError();

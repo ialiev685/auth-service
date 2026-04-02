@@ -6,7 +6,10 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN_SECRET ?? "";
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN_SECRET ?? "";
 
 class TokenService {
-  async saveToken(userId: number, refreshToken: string) {
+  private readonly REFRESH_TOKEN_AGE = "5Min";
+  private readonly ACCESS_TOKEN_AGE = "30Sec";
+
+  public async saveToken(userId: number, refreshToken: string) {
     const foundToken = await TokenModel.findOne({ where: { userId } });
     if (foundToken) {
       foundToken.refreshToken = refreshToken;
@@ -17,29 +20,29 @@ class TokenService {
     return createdToken.refreshToken;
   }
 
-  async findToken(refreshToken: string) {
+  public async findToken(refreshToken: string) {
     const foundToken = await TokenModel.findOne({ where: { refreshToken } });
     return foundToken;
   }
 
-  generateToken(userDto: UserDto) {
+  public generateToken(userDto: UserDto) {
     const refreshToken = jwt.sign({ ...userDto }, REFRESH_TOKEN, {
-      expiresIn: "5Min",
+      expiresIn: this.REFRESH_TOKEN_AGE,
     });
     const accessToken = jwt.sign({ ...userDto }, ACCESS_TOKEN, {
-      expiresIn: "30Sec",
+      expiresIn: this.ACCESS_TOKEN_AGE,
     });
     return { accessToken, refreshToken };
   }
 
-  verifyAccessToken(token: string) {
+  public verifyAccessToken(token: string) {
     try {
       return jwt.verify(token, ACCESS_TOKEN);
     } catch (_error) {
       return null;
     }
   }
-  verifyRefreshToken(token: string) {
+  public verifyRefreshToken(token: string) {
     try {
       return jwt.verify(token, ACCESS_TOKEN);
     } catch (_error) {
