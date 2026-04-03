@@ -16,6 +16,8 @@ export class UserModel extends Model<
   declare role: CreationOptional<"user" | "admin">;
   declare isActivate: CreationOptional<boolean>;
   declare activationLink: string | null;
+  declare resetPasswordToken: string | null;
+  declare resetPasswordExpired: number | null;
 }
 
 UserModel.init(
@@ -44,6 +46,14 @@ UserModel.init(
     },
     activationLink: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordExpired: {
+      type: DataTypes.BIGINT,
       allowNull: true,
     },
   },

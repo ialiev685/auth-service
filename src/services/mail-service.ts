@@ -20,7 +20,7 @@ class MailService {
     });
   }
 
-  public send = async (email: string, activationLink: string) => {
+  public sendActivationLink = async (email: string, activationLink: string) => {
     try {
       const result = await this.transporter.sendMail({
         from: process.env.MAIL_USER,
@@ -29,6 +29,28 @@ class MailService {
         html: `<div>
                     <h2><b>Для активации перейдите по ссылке:</b></h2>
                     <a href="${activationLink}">${activationLink}</a>
+                </div>`,
+      });
+
+      return result.accepted;
+    } catch (error) {
+      console.log("nodemailer error", error);
+      return [];
+    }
+  };
+
+  public sendResetPasswordLink = async (
+    email: string,
+    resetPasswordLink: string,
+  ) => {
+    try {
+      const result = await this.transporter.sendMail({
+        from: process.env.MAIL_USER,
+        to: email,
+        subject: `Активация на ${process.env.HOST}`,
+        html: `<div>
+                    <h2><b>Для сброса пароля перейдите по ссылке:</b></h2>
+                    <a href="${resetPasswordLink}">${resetPasswordLink}</a>
                 </div>`,
       });
 

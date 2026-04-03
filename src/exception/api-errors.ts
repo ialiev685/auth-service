@@ -19,4 +19,8 @@ export class ApiError<T> extends Error {
   static ForbiddenError(message: string) {
     return new ApiError(403, message);
   }
+
+  static EmailServiceUnavailableError(message?: string) {
+    return new ApiError(503, message || "Почтовый сервис временно недоступен");
+  }
 }

@@ -2,7 +2,13 @@ import type { Request, Response } from "express";
 import { userService } from "../services/user-service";
 import { validationResult } from "express-validator";
 import { ApiError } from "../exception/api-errors";
-import { REDIRECT_PARAM } from "../routes";
+import { REDIRECT_PARAM, UUID_PARAM } from "../routes";
+
+const formatQueryAndParamToString = (
+  value?: string | unknown | unknown[],
+): string | undefined => {
+  return typeof value === "string" ? value : undefined;
+};
 
 class Controller {
   private readonly REFRESH_TOKEN_AGE = 1000 * 60 * 5;
@@ -25,11 +31,8 @@ class Controller {
   };
 
   public register = async (req: Request, res: Response) => {
-    this.validateRequest.bind(this)(req);
-    const { email, password } = req.body;
-    const redirectParam = req.query[REDIRECT_PARAM];
-    const redirectUrl =
-      typeof redirectParam === "string" ? redirectParam : undefined;
+    this.validateRequest(req);
+    const { email, password, redirectUrl } = req.body;
     const { refreshToken, ...userData } = await userService.register(
       email,
       password,
@@ -40,12 +43,11 @@ class Controller {
   };
 
   public activate = async (req: Request, res: Response) => {
-    const activationLink =
-      typeof req.params.link === "string" ? req.params.link : "";
-    const redirectLink = req.query[REDIRECT_PARAM];
+    const activationLink = formatQueryAndParamToString(req.params[UUID_PARAM]);
+    const redirectLink = formatQueryAndParamToString(req.query[REDIRECT_PARAM]);
     await userService.activate(activationLink);
 
-    if (typeof redirectLink === "string") {
+    if (redirectLink) {
       return res.redirect(
         !redirectLink.startsWith("http")
           ? "http://" + redirectLink
@@ -89,6 +91,20 @@ class Controller {
     }
     const user = await userService.getUser(req.user);
     return res.status(200).json(user);
+  };
+
+  public forgotPassword = async (req: Request, res: Response) => {
+    this.validateRequest(req);
+    const { email, redirectUrl } = req.body;
+    await userService.forgotPassword(email, redirectUrl);
+    return res.status(200).end();
+  };
+
+  public resetPassword = async (req: Request, res: Response) => {
+    this.validateRequest(req);
+    const { password, uuid } = req.body;
+    await userService.resetPassword(password, uuid);
+    res.status(200).end();
   };
 }
 
