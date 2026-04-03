@@ -28,7 +28,7 @@ class MailService {
         subject: `Активация на ${process.env.HOST}`,
         html: `<div>
                     <h2><b>Для активации перейдите по ссылке:</b></h2>
-                    <a href="${activationLink}">${activationLink}</a>
+                    <a style="font-weight: bold; font-size: 16px;" href="${activationLink}">${activationLink}</a>
                 </div>`,
       });
 
@@ -50,7 +50,7 @@ class MailService {
         subject: `Активация на ${process.env.HOST}`,
         html: `<div>
                     <h2><b>Для сброса пароля перейдите по ссылке:</b></h2>
-                    <a href="${resetPasswordLink}">${resetPasswordLink}</a>
+                    <a style="font-weight: bold; font-size: 16px;" href="${resetPasswordLink}">${resetPasswordLink}</a>
                 </div>`,
       });
 
