@@ -5,6 +5,7 @@ import cookie from "@fastify/cookie";
 import { sequelizeInit } from "./plugins/db-plugin";
 import cors from "@fastify/cors";
 import { errorMiddleware } from "./middleware/error-middleware";
+import { transporterInit } from "./plugins/mailer-plugin";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.register(cors, {
   credentials: true,
 });
 app.register(cookie);
+app.register(transporterInit);
 app.register(routes, { prefix: "/api/v1" });
 app.setErrorHandler(errorMiddleware);
 
