@@ -1,28 +1,11 @@
-import type { Transporter } from "nodemailer";
-import { createTransport } from "nodemailer";
-import type SMTPTransport from "nodemailer/lib/smtp-transport";
+import type { FastifyInstance } from "fastify";
 
-class MailService {
-  private transporter: Transporter<
-    SMTPTransport.SentMessageInfo,
-    SMTPTransport.Options
-  >;
-
-  constructor() {
-    this.transporter = createTransport({
-      host: "smtp.yandex.ru",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASSWORD,
-      },
-    });
-  }
+export class MailService {
+  constructor(private fastifyInstance: FastifyInstance) {}
 
   public sendActivationLink = async (email: string, activationLink: string) => {
     try {
-      const result = await this.transporter.sendMail({
+      const result = await this.fastifyInstance.transporter.sendMail({
         from: process.env.MAIL_USER,
         to: email,
         subject: `Активация на ${process.env.HOST}`,
@@ -44,7 +27,7 @@ class MailService {
     resetPasswordLink: string,
   ) => {
     try {
-      const result = await this.transporter.sendMail({
+      const result = await this.fastifyInstance.transporter.sendMail({
         from: process.env.MAIL_USER,
         to: email,
         subject: `Активация на ${process.env.HOST}`,
@@ -61,5 +44,3 @@ class MailService {
     }
   };
 }
-
-export const mailService = new MailService();

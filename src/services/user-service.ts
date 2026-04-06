@@ -1,30 +1,40 @@
-import { UserModel } from "../models";
 import bcrypt from "bcrypt";
 import { isUserDto, UserDto } from "../dto/user";
 import { ApiError } from "../exception/api-errors";
-import { tokenService } from "./token-service";
+
 import { v4 as uuidv4 } from "uuid";
-import { mailService } from "./mail-service";
-import { sequelize } from "../db";
+
 import { REDIRECT_PARAM } from "../routes";
 import { Op } from "sequelize";
+import type { FastifyInstance } from "fastify";
+import { MailService } from "./mail-service";
+import { TokenService } from "./token-service";
 
-class UserService {
+export class UserService {
   private RESET_PASSWORD_TOKEN_EXPIRY_MS = 5 * 60 * 1000;
+  private mailService: MailService;
+  public tokenService: TokenService;
+
+  constructor(private fastifyInstance: FastifyInstance) {
+    this.mailService = new MailService(fastifyInstance);
+    this.tokenService = new TokenService(fastifyInstance);
+  }
 
   public register = async (
     email: string,
     password: string,
     redirect?: string,
   ) => {
-    const foundUser = await UserModel.findOne({ where: { email } });
+    const foundUser = await this.fastifyInstance.db.User.findOne({
+      where: { email },
+    });
     if (foundUser) {
       throw ApiError.BadRequestError(`Пользователь ${email} уже существует`);
     }
-    const transaction = await sequelize.transaction();
+    const transaction = await this.fastifyInstance.db.sequelize.transaction();
     const hashedPassword = await bcrypt.hash(password, 10);
     const activationLink = uuidv4();
-    const createdUser = await UserModel.create(
+    const createdUser = await this.fastifyInstance.db.User.create(
       {
         email,
         password: hashedPassword,
@@ -34,7 +44,7 @@ class UserService {
     );
 
     const redirectLink = redirect ? `?${REDIRECT_PARAM}=${redirect}` : "";
-    const resultAfterSend = await mailService.sendActivationLink(
+    const resultAfterSend = await this.mailService.sendActivationLink(
       email,
       `${process.env.HOST}/api/v1/activate/${activationLink}${redirectLink}`,
     );
@@ -44,8 +54,8 @@ class UserService {
     }
     await transaction.commit();
     const user = new UserDto(createdUser);
-    const { accessToken, refreshToken } = tokenService.generateToken(user);
-    await tokenService.saveToken(user.id, refreshToken);
+    const { accessToken, refreshToken } = this.tokenService.generateToken(user);
+    await this.tokenService.saveToken(user.id, refreshToken);
 
     return { ...user, accessToken, refreshToken };
   };
@@ -54,7 +64,9 @@ class UserService {
     if (!activationLink) {
       throw ApiError.BadRequestError("Неккоректная ссылка активации");
     }
-    const foundUser = await UserModel.findOne({ where: { activationLink } });
+    const foundUser = await this.fastifyInstance.db.User.findOne({
+      where: { activationLink },
+    });
     if (!foundUser) {
       throw ApiError.BadRequestError("Неккоректная ссылка активации");
     }
@@ -64,7 +76,9 @@ class UserService {
   };
 
   public login = async (email: string, password: string) => {
-    const foundUser = await UserModel.findOne({ where: { email } });
+    const foundUser = await this.fastifyInstance.db.User.findOne({
+      where: { email },
+    });
 
     if (!foundUser) {
       throw ApiError.BadRequestError(`Пользователь ${email} не найден`);
@@ -80,15 +94,15 @@ class UserService {
       throw ApiError.BadRequestError("Неверный логин или пароль");
     }
     const user = new UserDto(foundUser);
-    const { accessToken, refreshToken } = tokenService.generateToken(user);
-    await tokenService.saveToken(user.id, refreshToken);
+    const { accessToken, refreshToken } = this.tokenService.generateToken(user);
+    await this.tokenService.saveToken(user.id, refreshToken);
 
     return { ...user, accessToken, refreshToken };
   };
 
   public refresh = async (refreshToken: string) => {
-    const decodedToken = tokenService.verifyRefreshToken(refreshToken);
-    const foundToken = tokenService.findToken(refreshToken);
+    const decodedToken = this.tokenService.verifyRefreshToken(refreshToken);
+    const foundToken = this.tokenService.findToken(refreshToken);
 
     if (!decodedToken || !foundToken) {
       throw ApiError.UnauthorizedError();
@@ -97,20 +111,22 @@ class UserService {
     if (!isUserDto(decodedToken)) {
       throw ApiError.UnauthorizedError();
     }
-    const foundUser = await UserModel.findOne({
+    const foundUser = await this.fastifyInstance.db.User.findOne({
       where: { id: decodedToken.id },
     });
     if (!foundUser) {
       throw ApiError.UnauthorizedError();
     }
     const userDto = new UserDto(foundUser);
-    const tokens = tokenService.generateToken(userDto);
-    await tokenService.saveToken(userDto.id, tokens.refreshToken);
+    const tokens = this.tokenService.generateToken(userDto);
+    await this.tokenService.saveToken(userDto.id, tokens.refreshToken);
     return { ...userDto, ...tokens };
   };
 
   public getUser = async (userDto: UserDto) => {
-    const foundUser = await UserModel.findOne({ where: { id: userDto.id } });
+    const foundUser = await this.fastifyInstance.db.User.findOne({
+      where: { id: userDto.id },
+    });
     if (!foundUser) {
       throw ApiError.UnauthorizedError();
     }
@@ -118,14 +134,16 @@ class UserService {
     return new UserDto(foundUser);
   };
   public forgotPassword = async (email: string, redirectLink: string) => {
-    const foundUser = await UserModel.findOne({ where: { email } });
+    const foundUser = await this.fastifyInstance.db.User.findOne({
+      where: { email },
+    });
     if (!foundUser) {
       throw ApiError.UnauthorizedError();
     }
     const resetToken = uuidv4();
     const resetTokenExpired = Date.now() + this.RESET_PASSWORD_TOKEN_EXPIRY_MS;
 
-    const result = await mailService.sendResetPasswordLink(
+    const result = await this.mailService.sendResetPasswordLink(
       email,
       `${redirectLink}/${resetToken}`,
     );
@@ -144,7 +162,7 @@ class UserService {
     if (!resetPasswordToken) {
       throw ApiError.BadRequestError("Неккоректный токен для сброса пароля");
     }
-    const foundUser = await UserModel.findOne({
+    const foundUser = await this.fastifyInstance.db.User.findOne({
       where: {
         resetPasswordToken,
         resetPasswordExpired: {
@@ -162,5 +180,3 @@ class UserService {
     await foundUser.save();
   };
 }
-
-export const userService = new UserService();

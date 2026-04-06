@@ -1,29 +1,34 @@
-import express from "express";
 import dotenv from "dotenv";
-import { sequelize } from "./db";
-import { router } from "./routes";
-import cors from "cors";
-import cookieParser from "cookie-parser";
+import { routes } from "./routes";
+import Fastify from "fastify";
+import cookie from "@fastify/cookie";
+import { sequelizeInit } from "./plugins/db-plugin";
+import cors from "@fastify/cors";
 import { errorMiddleware } from "./middleware/error-middleware";
-import morgan from "morgan";
+
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 8000;
+const app = Fastify({ logger: true });
 
-app.use(cors({ origin: "*", credentials: true }));
-app.use(cookieParser());
-app.use(express.json());
-app.use(morgan("dev"));
-app.use("/api/v1", router);
-app.use(errorMiddleware);
+app.register(cors, {
+  origin: "*",
+  credentials: true,
+});
+app.register(cookie);
+app.register(routes, { prefix: "/api/v1" });
+app.setErrorHandler(errorMiddleware);
 
 const start = async () => {
-  console.log(process.env.NODE_ENV);
-  await sequelize.authenticate();
-  await sequelize.sync({ alter: true });
-  app.listen(PORT, () => {
-    console.log(`server started on port ${PORT}`);
+  await app.register(sequelizeInit);
+
+  app.listen({ port: Number(PORT), host: "0.0.0.0" }, (error, address) => {
+    console.log("address", address);
+    if (error) {
+      app.log.error(error);
+      process.exit(1);
+    }
+    console.log(`server started on address ${address}`);
   });
 };
 

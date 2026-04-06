@@ -1,8 +1,16 @@
-import type { Request, Response } from "express";
-import { userService } from "../services/user-service";
-import { validationResult } from "express-validator";
+import { UserService } from "../services/user-service";
+
 import { ApiError } from "../exception/api-errors";
 import { REDIRECT_PARAM, UUID_PARAM } from "../routes";
+import type {
+  ActivateType,
+  ForgotPasswordType,
+  LoginType,
+  RegisterType,
+  ResetPasswordType,
+  RouteHandlerCustom,
+} from "./types";
+import type { FastifyInstance, FastifyReply } from "fastify";
 
 const formatQueryAndParamToString = (
   value?: string | unknown | unknown[],
@@ -10,12 +18,17 @@ const formatQueryAndParamToString = (
   return typeof value === "string" ? value : undefined;
 };
 
-class Controller {
+export class Controller {
   private readonly REFRESH_TOKEN_AGE = 1000 * 60 * 5;
   private readonly REFRESH_TOKEN_KEY = "refreshToken";
+  public readonly userService: UserService;
 
-  private setRefreshTokenCookie = (res: Response, refreshToken: string) => {
-    res.cookie(this.REFRESH_TOKEN_KEY, refreshToken, {
+  constructor(fastifyInstance: FastifyInstance) {
+    this.userService = new UserService(fastifyInstance);
+  }
+
+  private setRefreshTokenCookie = (res: FastifyReply, refreshToken: string) => {
+    res.setCookie(this.REFRESH_TOKEN_KEY, refreshToken, {
       httpOnly: true,
       maxAge: this.REFRESH_TOKEN_AGE,
       path: "/refresh",
@@ -23,29 +36,21 @@ class Controller {
     });
   };
 
-  private validateRequest = (req: Request) => {
-    const checkResult = validationResult(req);
-    if (!checkResult.isEmpty()) {
-      throw ApiError.BadRequestError("Данные не валидны", checkResult.array());
-    }
-  };
-
-  public register = async (req: Request, res: Response) => {
-    this.validateRequest(req);
+  public register: RouteHandlerCustom<RegisterType> = async (req, res) => {
     const { email, password, redirectUrl } = req.body;
-    const { refreshToken, ...userData } = await userService.register(
+    const { refreshToken, ...userData } = await this.userService.register(
       email,
       password,
       redirectUrl,
     );
     this.setRefreshTokenCookie(res, refreshToken);
-    return res.status(201).json(userData);
+    return res.status(201).send(userData);
   };
 
-  public activate = async (req: Request, res: Response) => {
+  public activate: RouteHandlerCustom<ActivateType> = async (req, res) => {
     const activationLink = formatQueryAndParamToString(req.params[UUID_PARAM]);
     const redirectLink = formatQueryAndParamToString(req.query[REDIRECT_PARAM]);
-    await userService.activate(activationLink);
+    await this.userService.activate(activationLink);
 
     if (redirectLink) {
       return res.redirect(
@@ -62,50 +67,51 @@ class Controller {
       );
   };
 
-  public login = async (req: Request, res: Response) => {
-    this.validateRequest(req);
+  public login: RouteHandlerCustom<LoginType> = async (req, res) => {
     const { email, password } = req.body;
-    const { refreshToken, ...userData } = await userService.login(
+    const { refreshToken, ...userData } = await this.userService.login(
       email,
       password,
     );
 
     this.setRefreshTokenCookie(res, refreshToken);
-    return res.status(200).json(userData);
+    return res.status(200).send(userData);
   };
 
-  public refresh = async (req: Request, res: Response) => {
+  public refresh: RouteHandlerCustom = async (req, res) => {
     const refreshToken = req.cookies[this.REFRESH_TOKEN_KEY];
     if (!refreshToken) {
       throw ApiError.UnauthorizedError();
     }
     const { refreshToken: newRefreshToken, ...userData } =
-      await userService.refresh(refreshToken);
+      await this.userService.refresh(refreshToken);
     this.setRefreshTokenCookie(res, newRefreshToken);
-    return res.status(200).json(userData);
+    return res.status(200).send(userData);
   };
 
-  public currentUser = async (req: Request, res: Response) => {
+  public currentUser: RouteHandlerCustom = async (req, res) => {
     if (!req.user) {
       throw ApiError.UnauthorizedError();
     }
-    const user = await userService.getUser(req.user);
-    return res.status(200).json(user);
+    const user = await this.userService.getUser(req.user);
+    return res.status(200).send(user);
   };
 
-  public forgotPassword = async (req: Request, res: Response) => {
-    this.validateRequest(req);
+  public forgotPassword: RouteHandlerCustom<ForgotPasswordType> = async (
+    req,
+    res,
+  ) => {
     const { email, redirectUrl } = req.body;
-    await userService.forgotPassword(email, redirectUrl);
-    return res.status(200).end();
+    await this.userService.forgotPassword(email, redirectUrl);
+    return res.status(200).send();
   };
 
-  public resetPassword = async (req: Request, res: Response) => {
-    this.validateRequest(req);
+  public resetPassword: RouteHandlerCustom<ResetPasswordType> = async (
+    req,
+    res,
+  ) => {
     const { password, uuid } = req.body;
-    await userService.resetPassword(password, uuid);
-    res.status(200).end();
+    await this.userService.resetPassword(password, uuid);
+    res.status(200).send();
   };
 }
-
-export const controller = new Controller();

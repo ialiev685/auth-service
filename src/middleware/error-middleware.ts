@@ -1,19 +1,18 @@
-import type { Request, Response, NextFunction } from "express";
 import { ApiError } from "../exception/api-errors";
+import type { FastifyReply, FastifyRequest } from "fastify";
 
 export const errorMiddleware = (
   err: unknown,
-  _req: Request,
-  res: Response,
-  _next: NextFunction,
+  req: FastifyRequest,
+  res: FastifyReply,
 ) => {
   if (err instanceof ApiError) {
     return res
       .status(err.code)
-      .json({ message: err.message, errors: err.errors });
+      .send({ message: err.message, errors: err.errors });
   }
-
+  req.server.log.error(err);
   return res
     .status(500)
-    .json({ message: "Непредвиденная ошибка", errors: err });
+    .send({ message: "Непредвиденная ошибка", errors: err });
 };
