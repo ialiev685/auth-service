@@ -53,7 +53,7 @@ export class TokenService {
   };
   public verifyRefreshToken = (token: string) => {
     try {
-      return jwt.verify(token, ACCESS_TOKEN);
+      return jwt.verify(token, REFRESH_TOKEN);
     } catch (_error) {
       return null;
     }

@@ -102,8 +102,7 @@ export class UserService {
 
   public refresh = async (refreshToken: string) => {
     const decodedToken = this.tokenService.verifyRefreshToken(refreshToken);
-    const foundToken = this.tokenService.findToken(refreshToken);
-
+    const foundToken = await this.tokenService.findToken(refreshToken);
     if (!decodedToken || !foundToken) {
       throw ApiError.UnauthorizedError();
     }

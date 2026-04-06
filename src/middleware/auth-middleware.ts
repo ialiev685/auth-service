@@ -8,11 +8,9 @@ export const authMiddleware = (controller: Controller) => {
     try {
       const authHeader = req.headers.authorization;
       const token = authHeader?.split(" ")[1];
-
       if (!authHeader || !token) {
         throw ApiError.UnauthorizedError();
       }
-
       const decodedToken =
         controller.userService.tokenService.verifyAccessToken(token);
 
