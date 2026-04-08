@@ -22,3 +22,10 @@ make build-dev
 ```bash
 make build
 ```
+
+### 3. После запуска проекта Swagger документация доступна по следующим эндпоинтам:
+
+Swagger UI: /swagger
+Swagger JSON: /swagger/json
+
+![alt text](image.png)
