@@ -23,4 +23,8 @@ export class ApiError<T> extends Error {
   static EmailServiceUnavailableError(message?: string) {
     return new ApiError(503, message || "Почтовый сервис временно недоступен");
   }
+
+  static ValidationError(message?: string) {
+    return new ApiError(400, message || "Поля невалидны");
+  }
 }

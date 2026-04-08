@@ -1,27 +1,27 @@
-import type { Request, Response, NextFunction } from "express";
 import { ApiError } from "../exception/api-errors";
 import { isUserDto } from "../dto/user";
-import { tokenService } from "../services/token-service";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { Controller } from "../controller";
 
-export const authMiddleware = async (
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split(" ")[1];
-    if (!authHeader || !token) {
-      return next(ApiError.UnauthorizedError());
-    }
-    const decodedToken = tokenService.verifyAccessToken(token);
+export const authMiddleware = (controller: Controller) => {
+  return async (req: FastifyRequest, _res: FastifyReply) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.split(" ")[1];
+      if (!authHeader || !token) {
+        throw ApiError.UnauthorizedError();
+      }
+      const decodedToken =
+        controller.userService.tokenService.verifyAccessToken(token);
 
-    if (isUserDto(decodedToken)) {
-      req.user = decodedToken;
-      return next();
+      if (isUserDto(decodedToken)) {
+        req.user = decodedToken;
+        return;
+      }
+
+      throw ApiError.UnauthorizedError();
+    } catch (_error) {
+      throw ApiError.UnauthorizedError();
     }
-    next(ApiError.UnauthorizedError());
-  } catch (_error) {
-    next(ApiError.UnauthorizedError());
-  }
+  };
 };

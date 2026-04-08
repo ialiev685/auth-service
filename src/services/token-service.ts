@@ -1,27 +1,36 @@
-import { TokenModel } from "../models";
 import jwt from "jsonwebtoken";
 import type { UserDto } from "../dto/user";
+import type { FastifyInstance } from "fastify";
 
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN_SECRET ?? "";
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN_SECRET ?? "";
 
-class TokenService {
+export class TokenService {
   private readonly REFRESH_TOKEN_AGE = "5Min";
   private readonly ACCESS_TOKEN_AGE = "30Sec";
 
+  constructor(private fastifyInstance: FastifyInstance) {}
+
   public saveToken = async (userId: number, refreshToken: string) => {
-    const foundToken = await TokenModel.findOne({ where: { userId } });
+    const foundToken = await this.fastifyInstance.db.Token.findOne({
+      where: { userId },
+    });
     if (foundToken) {
       foundToken.refreshToken = refreshToken;
       await foundToken.save();
       return foundToken.refreshToken;
     }
-    const createdToken = await TokenModel.create({ userId, refreshToken });
+    const createdToken = await this.fastifyInstance.db.Token.create({
+      userId,
+      refreshToken,
+    });
     return createdToken.refreshToken;
   };
 
   public findToken = async (refreshToken: string) => {
-    const foundToken = await TokenModel.findOne({ where: { refreshToken } });
+    const foundToken = await this.fastifyInstance.db.Token.findOne({
+      where: { refreshToken },
+    });
     return foundToken;
   };
 
@@ -44,11 +53,9 @@ class TokenService {
   };
   public verifyRefreshToken = (token: string) => {
     try {
-      return jwt.verify(token, ACCESS_TOKEN);
+      return jwt.verify(token, REFRESH_TOKEN);
     } catch (_error) {
       return null;
     }
   };
 }
-
-export const tokenService = new TokenService();

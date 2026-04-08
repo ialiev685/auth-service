@@ -1,47 +1,50 @@
-import { Router } from "express";
-import { controller } from "../controller";
-import { errorHandler } from "../exception/error-handler";
+import { Controller } from "../controller";
+import type { FastifyPluginCallback } from "fastify";
 import { authMiddleware } from "../middleware/auth-middleware";
-import { body, param } from "express-validator";
+import {
+  activateSchema,
+  currentUserSchema,
+  forgotPasswordSchema,
+  loginSchema,
+  refreshSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from "../schemas";
 
-export const router = Router();
-export const REDIRECT_PARAM = "redirectUrl";
-export const UUID_PARAM = "uuid";
+export const REDIRECT_PARAM = "redirectUrl" as const;
+export const UUID_PARAM = "uuid" as const;
 
-router.post(
-  "/register",
-  body("email").isEmail(),
-  body("password", "Пароль должен быть не менее 8 символов").isLength({
-    min: 8,
-  }),
-  body(REDIRECT_PARAM, "redirectUrl должен быть валидным url")
-    .optional()
-    .isURL(),
-  errorHandler(controller.register),
-);
-router.get(
-  `/activate/:${UUID_PARAM}`,
-  param(UUID_PARAM).isUUID(),
-  errorHandler(controller.activate),
-);
-router.post("/login", body("email").isEmail(), errorHandler(controller.login));
-router.post(
-  "/forgotPassword",
-  body("email").isEmail(),
-  body(REDIRECT_PARAM).isURL(),
-  errorHandler(controller.forgotPassword),
-);
-router.post(
-  "/resetPassword",
-  body("password", "Пароль должен быть не менее 8 символов").isLength({
-    min: 8,
-  }),
-  body(UUID_PARAM).isUUID(),
-  errorHandler(controller.resetPassword),
-);
-router.post("/refresh", errorHandler(controller.refresh));
-router.get(
-  "/currentUser",
-  authMiddleware,
-  errorHandler(controller.currentUser),
-);
+export const routes: FastifyPluginCallback = (instance, _options, done) => {
+  const controller = new Controller(instance);
+
+  instance.post("/register", { schema: registerSchema }, controller.register);
+
+  instance.get(
+    `/activate/:${UUID_PARAM}`,
+    { schema: activateSchema },
+    controller.activate,
+  );
+
+  instance.post("/login", { schema: loginSchema }, controller.login);
+
+  instance.post(
+    "/forgotPassword",
+    { schema: forgotPasswordSchema },
+    controller.forgotPassword,
+  );
+
+  instance.post(
+    "/resetPassword",
+    { schema: resetPasswordSchema },
+    controller.resetPassword,
+  );
+
+  instance.post("/refresh", { schema: refreshSchema }, controller.refresh);
+
+  instance.get(
+    "/currentUser",
+    { preHandler: authMiddleware(controller), schema: currentUserSchema },
+    controller.currentUser,
+  );
+  done();
+};
