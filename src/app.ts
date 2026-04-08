@@ -6,11 +6,17 @@ import { sequelizeInit } from "./plugins/db-plugin";
 import cors from "@fastify/cors";
 import { errorMiddleware } from "./middleware/error-middleware";
 import { transporterInit } from "./plugins/mailer-plugin";
+import { ApiError } from "./exception/api-errors";
 
 dotenv.config();
 
 const PORT = process.env.PORT || 8000;
-const app = Fastify({ logger: true });
+const app = Fastify({
+  logger: true,
+  schemaErrorFormatter: (error) => {
+    return ApiError.ValidationError(error.at(0)?.message);
+  },
+});
 
 app.register(cors, {
   origin: "*",
@@ -25,7 +31,6 @@ const start = async () => {
   await app.register(sequelizeInit);
 
   app.listen({ port: Number(PORT), host: "0.0.0.0" }, (error, address) => {
-    console.log("address", address);
     if (error) {
       app.log.error(error);
       process.exit(1);
