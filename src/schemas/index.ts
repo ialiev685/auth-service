@@ -13,7 +13,7 @@ const userResponseSchema = Type.Object({
   role: Type.String(),
 });
 
-export const registerSchema: FastifySchema = {
+export const registerSchema = {
   tags: ["Авторизация"],
   summary: "Авторизация пользователя",
   body: Type.Object({
@@ -21,7 +21,6 @@ export const registerSchema: FastifySchema = {
     password: Type.String({ minLength: 8 }),
     redirectUrl: Type.String({ format: "uri" }),
   }),
-
   response: {
     201: userResponseSchema,
     400: errorResponseSchema,
