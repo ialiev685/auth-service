@@ -2,10 +2,8 @@
   "compilerOptions": {
     // Версия JS на выходе (для Node.js 18+)
     "target": "ES2022",
-    // Система модулей (ES Modules)
-    "module": "esnext",
-    // Алгоритм поиска модулей
-    "moduleResolution": "bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     // Доступные встроенные API
     "lib": ["ES2022"],
     // Папка для скомпилированных файлов
@@ -41,7 +39,9 @@
     // Безопасный доступ к массивам (arr[0] может быть undefined)
     "noUncheckedIndexedAccess": true,
     // Строгая проверка опциональных полей
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+
+    "allowImportingTsExtensions": false,
   },
   // Какие файлы компилировать
   "include": ["src/**/*"],
