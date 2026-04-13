@@ -1,5 +1,5 @@
 services:
-  app:
+  auth-app:
     build:
       context: .
     restart: unless-stopped
@@ -15,7 +15,7 @@ services:
       - app-network
     command: ["yarn", "start"]
 
-  db:
+  auth-db:
     image: postgres:16-alpine
     restart: unless-stopped
     ports:
