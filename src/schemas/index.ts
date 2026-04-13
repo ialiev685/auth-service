@@ -11,7 +11,7 @@ const userResponseSchema = Type.Object({
   id: Type.Number(),
   isActivate: Type.Boolean({ default: false }),
   role: Type.String(),
-  accessToken: Type.String(),
+  accessToken: Type.Optional(Type.String()),
 });
 
 export const registerSchema = {
