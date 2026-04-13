@@ -1,25 +1,27 @@
 services:
-  auth-app:
+  app:
+    container_name: auth-app
     build:
       context: .
     restart: unless-stopped
     volumes:
       - ./src:/app/src
     ports:
-      - "8000:8000"
+      - '8001:8000'
     env_file:
       - ./.env.dev
     depends_on:
       - db
     networks:
       - app-network
-    command: ["yarn", "dev"]
+    command: ['yarn', 'dev']
 
-  auth-db:
+  db:
+    container_name: auth-db
     image: postgres:16-alpine
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - '5433:${DB_PORT}'
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}

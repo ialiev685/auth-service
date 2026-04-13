@@ -2,10 +2,10 @@ build-dev:
 	sudo docker compose --env-file .env.dev -f docker-compose-dev.yml up --build -d
 
 stop-dev:
-	sudo docker compose -f docker-compose-dev.yml down
+	sudo docker compose --env-file .env.dev -f docker-compose-dev.yml down
 
 build:
 	sudo docker compose --env-file .env.prod -f docker-compose-prod.yml up --build -d
 
 stop:
-	sudo docker compose -f docker-compose-prod.yml down
+	sudo docker compose --env-file .env.prod -f docker-compose-prod.yml down
