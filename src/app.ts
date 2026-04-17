@@ -12,11 +12,12 @@ import swaggerUi from '@fastify/swagger-ui';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
 dotenv.config();
+const NODE_ENV = process.env.NODE_ENV ?? 'development';
 
 const PORT = process.env.PORT || 8001;
 const app = Fastify({
   logger:
-    process.env.NODE_ENV === 'development'
+    NODE_ENV === 'development'
       ? {
           transport: {
             target: 'pino-pretty',
@@ -44,25 +45,27 @@ app.register(cookie);
 app.get('/health', async () => {
   return { status: 'ok', timestamp: new Date().toISOString() };
 });
-app.register(swagger, {
-  openapi: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Авторизация',
-      description: 'swagger API',
-      version: '1.0.0',
-    },
-    servers: [
-      {
-        url: `http://localhost:${PORT}`,
-        description: 'Development server',
+if (NODE_ENV === 'development') {
+  app.register(swagger, {
+    openapi: {
+      openapi: '3.0.0',
+      info: {
+        title: 'Авторизация',
+        description: 'swagger API',
+        version: '1.0.0',
       },
-    ],
-  },
-});
-app.register(swaggerUi, {
-  routePrefix: '/swagger',
-});
+      servers: [
+        {
+          url: `http://localhost:${PORT}`,
+          description: 'Development server',
+        },
+      ],
+    },
+  });
+  app.register(swaggerUi, {
+    routePrefix: '/swagger',
+  });
+}
 app.register(transporterInit);
 app.register(routes, { prefix: '/api/v1' });
 app.setErrorHandler(errorMiddleware);
