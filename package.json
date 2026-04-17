@@ -8,6 +8,7 @@
   "scripts": {
     "build": "yarn clean && tsc",
     "dev": "tsx watch --env-file=.env.dev src/app.ts",
+    "dev:docker": "RUNNING_IN_DOCKER=true tsx watch --env-file=.env.dev src/app.ts",
     "start": "yarn build && node dist/app.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",

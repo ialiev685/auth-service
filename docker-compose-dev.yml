@@ -14,7 +14,7 @@ services:
       - db
     networks:
       - app-network
-    command: ['yarn', 'dev']
+    command: ['yarn', 'dev:docker']
 
   db:
     container_name: auth-db
