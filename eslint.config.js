@@ -1,9 +1,9 @@
-import eslint from "@eslint/js";
-import { defineConfig, globalIgnores } from "eslint/config";
-import tseslint from "typescript-eslint";
+import eslint from '@eslint/js';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  globalIgnores(["dist/**", "node_modules/**"]),
+  globalIgnores(['dist/**', 'node_modules/**', 'src/database/seed-runner.ts']),
 
   // Базовые правила JavaScript
   eslint.configs.recommended,
@@ -17,7 +17,7 @@ export default defineConfig(
 
   // Кастомные настройки
   {
-    files: ["src/**/*.ts"],
+    files: ['src/**/*.ts'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -26,16 +26,16 @@ export default defineConfig(
       },
     },
     rules: {
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
         {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
         },
       ],
-      "@typescript-eslint/consistent-type-imports": "error",
+      '@typescript-eslint/consistent-type-imports': 'error',
     },
   },
 );

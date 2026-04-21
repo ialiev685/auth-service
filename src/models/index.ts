@@ -1,10 +1,38 @@
-import { sequelize } from "../db";
+import { sequelize } from '../db';
 import type {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
-} from "sequelize";
-import { DataTypes, Model } from "sequelize";
+  ForeignKey,
+} from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
+
+export class RoleModel extends Model<
+  InferAttributes<RoleModel>,
+  InferCreationAttributes<RoleModel>
+> {
+  declare id: CreationOptional<number>;
+  declare name: 'user' | 'admin';
+}
+
+RoleModel.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.ENUM('user', 'admin'),
+      unique: true,
+      allowNull: false,
+      validate: {
+        isIn: [['user', 'admin']],
+      },
+    },
+  },
+  { sequelize, modelName: 'Role', tableName: 'role', timestamps: false },
+);
 
 export class UserModel extends Model<
   InferAttributes<UserModel>,
@@ -13,11 +41,12 @@ export class UserModel extends Model<
   declare id: CreationOptional<number>;
   declare email: string;
   declare password: string;
-  declare role: CreationOptional<"user" | "admin">;
+  declare roleId: ForeignKey<number>;
   declare isActivate: CreationOptional<boolean>;
   declare activationLink: string | null;
   declare resetPasswordToken: string | null;
   declare resetPasswordExpired: number | null;
+  declare role?: RoleModel;
 }
 
 UserModel.init(
@@ -36,28 +65,36 @@ UserModel.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    role: {
-      type: DataTypes.ENUM("user", "admin"),
-      defaultValue: "user",
+    roleId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'role',
+        key: 'id',
+      },
+      field: 'role_id',
     },
     isActivate: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+      field: 'is_activate',
     },
     activationLink: {
       type: DataTypes.STRING,
       allowNull: true,
+      field: 'activation_link',
     },
     resetPasswordToken: {
       type: DataTypes.STRING,
       allowNull: true,
+      field: 'reset_password_token',
     },
     resetPasswordExpired: {
       type: DataTypes.BIGINT,
       allowNull: true,
+      field: 'reset_password_expired',
     },
   },
-  { sequelize, modelName: "User" },
+  { sequelize, modelName: 'User', tableName: 'user' },
 );
 
 export class TokenModel extends Model<
@@ -82,22 +119,31 @@ TokenModel.init(
       allowNull: false,
       references: {
         model: UserModel,
-        key: "id",
+        key: 'id',
       },
+      field: 'user_id',
     },
     refreshToken: {
       type: DataTypes.STRING,
       allowNull: false,
+      field: 'refresh_token',
     },
   },
   {
     sequelize,
-    modelName: "Token",
+    modelName: 'Token',
+    tableName: 'token',
   },
 );
-
-UserModel.hasOne(TokenModel, {
-  onDelete: "CASCADE",
-  foreignKey: "userId",
+RoleModel.hasMany(UserModel, {
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE',
+  foreignKey: 'roleId',
+  as: 'users',
 });
-TokenModel.belongsTo(UserModel, { foreignKey: "userId" });
+UserModel.belongsTo(RoleModel, { foreignKey: 'roleId', as: 'role' });
+UserModel.hasOne(TokenModel, {
+  onDelete: 'CASCADE',
+  foreignKey: 'userId',
+});
+TokenModel.belongsTo(UserModel, { foreignKey: 'userId' });
