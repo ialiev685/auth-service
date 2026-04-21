@@ -94,7 +94,7 @@ UserModel.init(
       field: 'reset_password_expired',
     },
   },
-  { sequelize, modelName: 'User', tableName: 'user' },
+  { sequelize, modelName: 'User', tableName: 'user', timestamps: false },
 );
 
 export class TokenModel extends Model<
@@ -104,6 +104,8 @@ export class TokenModel extends Model<
   declare id: CreationOptional<number>;
   declare userId: number;
   declare refreshToken: string;
+  declare createdAt?: string;
+  declare updatedAt?: string;
 }
 
 TokenModel.init(
@@ -125,8 +127,20 @@ TokenModel.init(
     },
     refreshToken: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       field: 'refresh_token',
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: DataTypes.NOW,
+      field: 'created_at',
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+      field: 'updated_at',
     },
   },
   {

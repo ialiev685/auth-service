@@ -1,14 +1,14 @@
-import bcrypt from "bcrypt";
-import { isUserDto, UserDto } from "../dto/user";
-import { ApiError } from "../exception/api-errors";
+import bcrypt from 'bcrypt';
+import { isUserDto, UserDto } from '../dto/user';
+import { ApiError } from '../exception/api-errors';
 
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 
-import { REDIRECT_PARAM } from "../routes";
-import { Op } from "sequelize";
-import type { FastifyInstance } from "fastify";
-import { MailService } from "./mail-service";
-import { TokenService } from "./token-service";
+import { REDIRECT_PARAM } from '../routes';
+import { Op } from 'sequelize';
+import type { FastifyInstance } from 'fastify';
+import { MailService } from './mail-service';
+import { TokenService } from './token-service';
 
 export class UserService {
   private RESET_PASSWORD_TOKEN_EXPIRY_MS = 5 * 60 * 1000;
@@ -20,11 +20,7 @@ export class UserService {
     this.tokenService = new TokenService(fastifyInstance);
   }
 
-  public register = async (
-    email: string,
-    password: string,
-    redirect?: string,
-  ) => {
+  public register = async (email: string, password: string, redirect?: string) => {
     const foundUser = await this.fastifyInstance.db.User.findOne({
       where: { email },
     });
@@ -34,16 +30,29 @@ export class UserService {
     const transaction = await this.fastifyInstance.db.sequelize.transaction();
     const hashedPassword = await bcrypt.hash(password, 10);
     const activationLink = uuidv4();
+    const role = await this.fastifyInstance.db.Role.findOne({ where: { name: 'user' } });
+    if (!role) {
+      throw ApiError.NotFoundError('Данные ролей не найдены в базе данных');
+    }
     const createdUser = await this.fastifyInstance.db.User.create(
       {
         email,
         password: hashedPassword,
         activationLink,
+        roleId: role.id,
       },
-      { transaction },
+      {
+        transaction,
+        include: [
+          {
+            model: this.fastifyInstance.db.Role,
+            as: 'role',
+          },
+        ],
+      },
     );
 
-    const redirectLink = redirect ? `?${REDIRECT_PARAM}=${redirect}` : "";
+    const redirectLink = redirect ? `?${REDIRECT_PARAM}=${redirect}` : '';
     const resultAfterSend = await this.mailService.sendActivationLink(
       email,
       `${process.env.HOST}/api/v1/activate/${activationLink}${redirectLink}`,
@@ -62,13 +71,13 @@ export class UserService {
 
   public activate = async (activationLink?: string) => {
     if (!activationLink) {
-      throw ApiError.BadRequestError("Неккоректная ссылка активации");
+      throw ApiError.BadRequestError('Неккоректная ссылка активации');
     }
     const foundUser = await this.fastifyInstance.db.User.findOne({
       where: { activationLink },
     });
     if (!foundUser) {
-      throw ApiError.BadRequestError("Неккоректная ссылка активации");
+      throw ApiError.BadRequestError('Неккоректная ссылка активации');
     }
     foundUser.isActivate = true;
     foundUser.activationLink = null;
@@ -78,20 +87,23 @@ export class UserService {
   public login = async (email: string, password: string) => {
     const foundUser = await this.fastifyInstance.db.User.findOne({
       where: { email },
+      include: [
+        {
+          model: this.fastifyInstance.db.Role,
+          as: 'role',
+        },
+      ],
     });
 
     if (!foundUser) {
       throw ApiError.BadRequestError(`Пользователь ${email} не найден`);
     }
     if (!foundUser.isActivate) {
-      throw ApiError.ForbiddenError("Аккаунт не активирован");
+      throw ApiError.ForbiddenError('Аккаунт не активирован');
     }
-    const resultCheckPassword = await bcrypt.compare(
-      password,
-      foundUser.password,
-    );
+    const resultCheckPassword = await bcrypt.compare(password, foundUser.password);
     if (!resultCheckPassword) {
-      throw ApiError.BadRequestError("Неверный логин или пароль");
+      throw ApiError.BadRequestError('Неверный логин или пароль');
     }
     const user = new UserDto(foundUser);
     const { accessToken, refreshToken } = this.tokenService.generateToken(user);
@@ -112,6 +124,12 @@ export class UserService {
     }
     const foundUser = await this.fastifyInstance.db.User.findOne({
       where: { id: decodedToken.id },
+      include: [
+        {
+          model: this.fastifyInstance.db.Role,
+          as: 'role',
+        },
+      ],
     });
     if (!foundUser) {
       throw ApiError.UnauthorizedError();
@@ -154,12 +172,9 @@ export class UserService {
     await foundUser.save();
   };
 
-  public resetPassword = async (
-    newPassword: string,
-    resetPasswordToken?: string,
-  ) => {
+  public resetPassword = async (newPassword: string, resetPasswordToken?: string) => {
     if (!resetPasswordToken) {
-      throw ApiError.BadRequestError("Неккоректный токен для сброса пароля");
+      throw ApiError.BadRequestError('Неккоректный токен для сброса пароля');
     }
     const foundUser = await this.fastifyInstance.db.User.findOne({
       where: {
@@ -170,7 +185,7 @@ export class UserService {
       },
     });
     if (!foundUser) {
-      throw ApiError.BadRequestError("Токен просрочен");
+      throw ApiError.BadRequestError('Токен просрочен');
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     foundUser.password = hashedPassword;
