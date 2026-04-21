@@ -1,3 +1,9 @@
+db-dev:
+	sudo docker compose --env-file .env.dev -f docker-compose-dev.yml up --build -d db
+
+stop-db-dev:
+	sudo docker compose --env-file .env.dev -f docker-compose-dev.yml down db
+
 build-dev:
 	sudo docker compose --env-file .env.dev -f docker-compose-dev.yml up --build -d
 
