@@ -15,12 +15,12 @@
     "lint:fix": "eslint . --fix",
     "clean": "rm -rf dist",
     "migrate:create": "tsx migrate.js create --prefix TIMESTAMP --folder src/database/migrations --name",
-    "migrate": "dotenv -e .env.dev -- tsx migrate.js up",
-    "migrate:pending": "dotenv -e .env.dev -- tsx migrate.js pending",
-    "migrate:down": "dotenv -e .env.dev -- tsx migrate.js down --name",
+    "migrate": "dotenv -e .env.dev -- tsx src/database/migrate up",
+    "migrate:pending": "dotenv -e .env.dev -- tsx  src/database/migrate pending",
+    "migrate:down": "dotenv -e .env.dev -- tsx  src/database/migrate down --name",
     "seed:create": "tsx seed.js create --prefix TIMESTAMP --folder src/database/seeds --name",
-    "seed:up": "dotenv -e .env.dev -- tsx seed.js up",
-    "seed:down": "dotenv -e .env.dev -- tsx seed.js down --name"
+    "seed:up": "dotenv -e .env.dev -- tsx  src/database/seed up",
+    "seed:down": "dotenv -e .env.dev -- tsx  src/database/seed down --name"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
