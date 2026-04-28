@@ -21,7 +21,7 @@ const showFormattedInfoLog = (message: Record<string, unknown>) => {
 
 export const seed = new Umzug({
   migrations: {
-    glob: ['seeds/*ts', { cwd: __dirname }],
+    glob: ['seeds/*.js', { cwd: __dirname }],
   },
   context: sequelize.getQueryInterface(),
   storage: new SequelizeStorage({

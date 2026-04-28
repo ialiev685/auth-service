@@ -14,13 +14,16 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "clean": "rm -rf dist",
-    "migrate:create": "tsx migrate.js create --prefix TIMESTAMP --folder src/database/migrations --name",
-    "migrate": "dotenv -e .env.dev -- tsx src/database/migrate up",
-    "migrate:pending": "dotenv -e .env.dev -- tsx  src/database/migrate pending",
-    "migrate:down": "dotenv -e .env.dev -- tsx  src/database/migrate down --name",
-    "seed:create": "tsx seed.js create --prefix TIMESTAMP --folder src/database/seeds --name",
-    "seed:up": "dotenv -e .env.dev -- tsx  src/database/seed up",
-    "seed:down": "dotenv -e .env.dev -- tsx  src/database/seed down --name"
+    "migrate:create": "tsx src/database/migrate.ts create --prefix TIMESTAMP --folder src/database/migrations --name",
+    "seed:create": "tsx src/database/seed.ts create --prefix TIMESTAMP --folder src/database/seeds --name",
+    "premigrate": "yarn build",
+    "premigrate:pending": "yarn build",
+    "premigrate:down": "yarn build",
+    "migrate": "node --env-file=.env.${ENV:-dev} dist/database/migrate.js up",
+    "migrate:pending": "node --env-file=.env.${ENV:-dev} dist/database/migrate.js pending",
+    "migrate:down": "node --env-file=.env.${ENV:-dev} dist/database/migrate.js down --name",
+    "seed:up": "node --env-file=.env.${ENV:-dev} dist/database/seed.js up",
+    "seed:down": "node --env-file=.env.${ENV:-dev} dist/database/seed.js down --name"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

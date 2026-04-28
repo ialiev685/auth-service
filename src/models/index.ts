@@ -1,4 +1,4 @@
-import { sequelize } from '../db';
+import { sequelize } from '../database/sequelize-db';
 import type {
   InferAttributes,
   InferCreationAttributes,
