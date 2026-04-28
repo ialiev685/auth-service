@@ -7,6 +7,7 @@ echo "🚀 Starting in $NODE_ENV mode"
 
 echo "🔄 Running migrations..."
 yarn migrate
+yarn seed:up
 
 echo "🚀 Starting server..."
 if [ "$NODE_ENV" = "production" ]; then

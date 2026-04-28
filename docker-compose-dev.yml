@@ -19,7 +19,7 @@ services:
        
     # networks:
     #   - auth-network
-    # entrypoint: ["./entrypoint.sh"]
+
 
   db:
     container_name: auth-db
