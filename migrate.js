@@ -1,3 +1,3 @@
-import { migrator } from './src/database/migrator.ts'
+import { migrator } from './src/database/migrator';
 
-migrator.runAsCLI()
+migrator.runAsCLI();

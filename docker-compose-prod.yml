@@ -13,7 +13,7 @@ services:
     depends_on:
       - auth-db
     networks:
-      - app-network
+      - auth-network
     command: ['yarn', 'start']
 
   db:
@@ -30,10 +30,10 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - auth-network
 
 networks:
-  app-network:
+  auth-network:
     driver: bridge
 
 volumes:

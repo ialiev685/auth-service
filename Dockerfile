@@ -8,5 +8,8 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 
+RUN chmod +x entrypoint.sh
+
 RUN yarn build
 
+ENTRYPOINT ["./entrypoint.sh"]
