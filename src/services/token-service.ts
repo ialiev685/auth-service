@@ -1,13 +1,14 @@
-import jwt from "jsonwebtoken";
-import type { UserDto } from "../dto/user";
-import type { FastifyInstance } from "fastify";
+import jwt from 'jsonwebtoken';
+import type { UserDto } from '../dto/user';
+import type { FastifyInstance } from 'fastify';
 
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN_SECRET ?? "";
-const REFRESH_TOKEN = process.env.REFRESH_TOKEN_SECRET ?? "";
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN_SECRET ?? '';
+const REFRESH_TOKEN = process.env.REFRESH_TOKEN_SECRET ?? '';
 
 export class TokenService {
-  private readonly REFRESH_TOKEN_AGE = "1Day";
-  private readonly ACCESS_TOKEN_AGE = "30Min";
+  private readonly REFRESH_TOKEN_AGE = '1Day';
+  private readonly ACCESS_TOKEN_AGE = '1Hour';
+  // private readonly ACCESS_TOKEN_AGE = '30Min';
 
   constructor(private fastifyInstance: FastifyInstance) {}
 
