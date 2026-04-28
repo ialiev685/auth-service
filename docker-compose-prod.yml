@@ -4,6 +4,9 @@ services:
     build:
       context: .
     restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      RUNNING_IN_DOCKER: true
     volumes:
       - ./src:/app/src
     ports:
@@ -21,7 +24,7 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     ports:
-      - '5433:${DB_PORT}'
+      - '5433:5432'
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
