@@ -124,6 +124,11 @@ export const refreshSchema = {
 export const currentUserSchema = {
   tags: ['Пользователь'],
   summary: 'Текущий пользователь',
+  security: [
+    {
+      bearerAuth: [],
+    },
+  ],
   response: {
     200: userResponseSchema,
     401: errorResponseSchema,
