@@ -17,8 +17,8 @@ services:
       db:
         condition: service_healthy
        
-    # networks:
-    #   - auth-network
+    networks:
+      - auth-network
 
 
   db:
@@ -39,12 +39,13 @@ services:
     
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    # networks:
-    #   - auth-network
+    networks:
+      - auth-network
 
-# networks:
-#   auth-network:
-#     driver: bridge
+networks:
+  auth-network:
+    driver: bridge
+    name: auth-network 
 
 volumes:
   postgres-data:
