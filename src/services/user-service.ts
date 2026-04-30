@@ -143,6 +143,12 @@ export class UserService {
   public getUser = async (userDto: UserDto) => {
     const foundUser = await this.fastifyInstance.db.User.findOne({
       where: { id: userDto.id },
+      include: [
+        {
+          model: this.fastifyInstance.db.Role,
+          as: 'role',
+        },
+      ],
     });
     if (!foundUser) {
       throw ApiError.UnauthorizedError();
