@@ -43,6 +43,15 @@ export const loginSchema: FastifySchema = {
   },
 };
 
+export const logoutSchema: FastifySchema = {
+  tags: ['Авторизация'],
+  summary: 'Авторизация пользователя',
+  response: {
+    200: Type.Null(),
+    500: errorResponseSchema,
+  },
+};
+
 export const activateSchema = {
   tags: ['Авторизация'],
   summary: 'Активация аккаунта',

@@ -193,4 +193,8 @@ export class UserService {
     foundUser.resetPasswordToken = null;
     await foundUser.save();
   };
+
+  public logout = async (refreshToken: string) => {
+    await this.tokenService.clearToken(refreshToken);
+  };
 }
