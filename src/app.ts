@@ -37,9 +37,12 @@ const app = Fastify({
   },
 }).withTypeProvider<TypeBoxTypeProvider>();
 
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:8000'];
 app.register(cors, {
-  origin: '*',
+  origin: allowedOrigins,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 });
 app.register(cookie);
 app.get('/health', async () => {

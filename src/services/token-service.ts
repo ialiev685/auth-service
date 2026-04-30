@@ -7,8 +7,8 @@ const REFRESH_TOKEN = process.env.REFRESH_TOKEN_SECRET ?? '';
 
 export class TokenService {
   private readonly REFRESH_TOKEN_AGE = '1Day';
-  private readonly ACCESS_TOKEN_AGE = '1Hour';
-  // private readonly ACCESS_TOKEN_AGE = '30Min';
+  // private readonly ACCESS_TOKEN_AGE = '1Hour';
+  private readonly ACCESS_TOKEN_AGE = '1Min';
 
   constructor(private fastifyInstance: FastifyInstance) {}
 
@@ -57,6 +57,17 @@ export class TokenService {
       return jwt.verify(token, REFRESH_TOKEN);
     } catch (_error) {
       return null;
+    }
+  };
+
+  public clearToken = async (refreshToken: string) => {
+    const token = await this.fastifyInstance.db.Token.findOne({
+      where: {
+        refreshToken,
+      },
+    });
+    if (token) {
+      await token.destroy();
     }
   };
 }

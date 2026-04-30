@@ -29,8 +29,9 @@ export class Controller {
     res.setCookie(this.REFRESH_TOKEN_KEY, refreshToken, {
       httpOnly: true,
       maxAge: this.REFRESH_TOKEN_AGE,
-      path: '/refresh',
-      sameSite: 'strict',
+      path: '/',
+      sameSite: 'lax',
+      secure: true,
     });
   };
 
@@ -66,7 +67,6 @@ export class Controller {
   public login: RouteHandlerCustom<LoginType> = async (req, res) => {
     const { email, password } = req.body;
     const { refreshToken, ...userData } = await this.userService.login(email, password);
-
     this.setRefreshTokenCookie(res, refreshToken);
     return res.status(200).send(userData);
   };
@@ -99,6 +99,13 @@ export class Controller {
   public resetPassword: RouteHandlerCustom<ResetPasswordType> = async (req, res) => {
     const { password, uuid } = req.body;
     await this.userService.resetPassword(password, uuid);
+    res.status(200).send();
+  };
+
+  public logout: RouteHandlerCustom = async (req, res) => {
+    res.clearCookie(this.REFRESH_TOKEN_KEY);
+    const refreshToken = req.cookies[this.REFRESH_TOKEN_KEY] ?? '';
+    await this.userService.logout(refreshToken);
     res.status(200).send();
   };
 }
