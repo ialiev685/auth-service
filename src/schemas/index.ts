@@ -10,7 +10,7 @@ const userResponseSchema = Type.Object({
   email: Type.String({ format: 'email' }),
   id: Type.Number(),
   isActivate: Type.Boolean({ default: false }),
-  role: Type.String(),
+  role: Type.Union([Type.Literal('user'), Type.Literal('admin')]),
   accessToken: Type.Optional(Type.String()),
 });
 
