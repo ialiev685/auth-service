@@ -6,6 +6,7 @@ import {
   currentUserSchema,
   forgotPasswordSchema,
   loginSchema,
+  logoutSchema,
   refreshSchema,
   registerSchema,
   resetPasswordSchema,
@@ -26,6 +27,11 @@ export const routes: FastifyPluginCallback = (instance, _options, done) => {
     '/currentUser',
     { preHandler: authMiddleware(controller), schema: currentUserSchema },
     controller.currentUser,
+  );
+  instance.post(
+    '/logout',
+    { preHandler: authMiddleware(controller), schema: logoutSchema },
+    controller.logout,
   );
   done();
 };
