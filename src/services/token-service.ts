@@ -7,7 +7,7 @@ const REFRESH_TOKEN = process.env.REFRESH_TOKEN_SECRET ?? '';
 
 export class TokenService {
   private readonly REFRESH_TOKEN_AGE = '1Day';
-  private readonly ACCESS_TOKEN_AGE = '1Hour';
+  private readonly ACCESS_TOKEN_AGE = '15Min';
   // private readonly ACCESS_TOKEN_AGE = '1Min';
 
   constructor(private fastifyInstance: FastifyInstance) {}
