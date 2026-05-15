@@ -98,12 +98,16 @@ export class UserService {
     if (!foundUser) {
       throw ApiError.BadRequestError(`Пользователь ${email} не найден`);
     }
-    if (!foundUser.isActivate) {
-      throw ApiError.ForbiddenError('Аккаунт не активирован');
-    }
+
     const resultCheckPassword = await bcrypt.compare(password, foundUser.password);
     if (!resultCheckPassword) {
       throw ApiError.BadRequestError('Неверный логин или пароль');
+    }
+
+    if (!foundUser.isActivate) {
+      throw ApiError.ForbiddenError(
+        'Учетная запись не подтверждена. Проверьте почту для активации',
+      );
     }
     const user = new UserDto(foundUser);
     const { accessToken, refreshToken } = this.tokenService.generateToken(user);
