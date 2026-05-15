@@ -172,7 +172,7 @@ export class UserService {
 
     const result = await this.mailService.sendResetPasswordLink(
       email,
-      `${redirectLink}/${resetToken}`,
+      redirectLink.replace(':token', resetToken),
     );
     if (result.length === 0) {
       throw ApiError.EmailServiceUnavailableError();
