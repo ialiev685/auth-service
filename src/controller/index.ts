@@ -37,12 +37,12 @@ export class Controller {
 
   public register: RouteHandlerCustom<RegisterType> = async (req, res) => {
     const { email, password, redirectUrl } = req.body;
-    const { refreshToken, ...userData } = await this.userService.register(
+    const { refreshToken: _refreshToken, ...userData } = await this.userService.register(
       email,
       password,
       redirectUrl,
     );
-    this.setRefreshTokenCookie(res, refreshToken);
+    // this.setRefreshTokenCookie(res, refreshToken);
     return res.status(201).send(userData);
   };
 
