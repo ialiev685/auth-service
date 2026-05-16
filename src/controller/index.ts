@@ -31,7 +31,7 @@ export class Controller {
       maxAge: this.REFRESH_TOKEN_AGE,
       path: '/',
       sameSite: 'lax',
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
     });
   };
 
