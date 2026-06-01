@@ -1,13 +1,14 @@
-import jwt from "jsonwebtoken";
-import type { UserDto } from "../dto/user";
-import type { FastifyInstance } from "fastify";
+import jwt from 'jsonwebtoken';
+import type { UserDto } from '../dto/user';
+import type { FastifyInstance } from 'fastify';
 
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN_SECRET ?? "";
-const REFRESH_TOKEN = process.env.REFRESH_TOKEN_SECRET ?? "";
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN_SECRET ?? '';
+const REFRESH_TOKEN = process.env.REFRESH_TOKEN_SECRET ?? '';
 
 export class TokenService {
-  private readonly REFRESH_TOKEN_AGE = "5Min";
-  private readonly ACCESS_TOKEN_AGE = "30Sec";
+  private readonly REFRESH_TOKEN_AGE = '1Day';
+  private readonly ACCESS_TOKEN_AGE = '15Min';
+  // private readonly ACCESS_TOKEN_AGE = '1Min';
 
   constructor(private fastifyInstance: FastifyInstance) {}
 
@@ -56,6 +57,17 @@ export class TokenService {
       return jwt.verify(token, REFRESH_TOKEN);
     } catch (_error) {
       return null;
+    }
+  };
+
+  public clearToken = async (refreshToken: string) => {
+    const token = await this.fastifyInstance.db.Token.findOne({
+      where: {
+        refreshToken,
+      },
+    });
+    if (token) {
+      await token.destroy();
     }
   };
 }

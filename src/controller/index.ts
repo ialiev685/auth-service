@@ -1,7 +1,7 @@
-import { UserService } from "../services/user-service";
+import { UserService } from '../services/user-service';
 
-import { ApiError } from "../exception/api-errors";
-import { REDIRECT_PARAM, UUID_PARAM } from "../routes";
+import { ApiError } from '../exception/api-errors';
+import { REDIRECT_PARAM, UUID_PARAM } from '../routes';
 import type {
   ActivateType,
   ForgotPasswordType,
@@ -9,18 +9,16 @@ import type {
   RegisterType,
   ResetPasswordType,
   RouteHandlerCustom,
-} from "./types";
-import type { FastifyInstance, FastifyReply } from "fastify";
+} from './types';
+import type { FastifyInstance, FastifyReply } from 'fastify';
 
-const formatQueryAndParamToString = (
-  value?: string | unknown | unknown[],
-): string | undefined => {
-  return typeof value === "string" ? value : undefined;
+const formatQueryAndParamToString = (value?: string | unknown | unknown[]): string | undefined => {
+  return typeof value === 'string' ? value : undefined;
 };
 
 export class Controller {
   private readonly REFRESH_TOKEN_AGE = 1000 * 60 * 5;
-  private readonly REFRESH_TOKEN_KEY = "refreshToken";
+  private readonly REFRESH_TOKEN_KEY = 'refreshToken';
   public readonly userService: UserService;
 
   constructor(fastifyInstance: FastifyInstance) {
@@ -31,19 +29,20 @@ export class Controller {
     res.setCookie(this.REFRESH_TOKEN_KEY, refreshToken, {
       httpOnly: true,
       maxAge: this.REFRESH_TOKEN_AGE,
-      path: "/refresh",
-      sameSite: "strict",
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
     });
   };
 
   public register: RouteHandlerCustom<RegisterType> = async (req, res) => {
     const { email, password, redirectUrl } = req.body;
-    const { refreshToken, ...userData } = await this.userService.register(
+    const { refreshToken: _refreshToken, ...userData } = await this.userService.register(
       email,
       password,
       redirectUrl,
     );
-    this.setRefreshTokenCookie(res, refreshToken);
+    // this.setRefreshTokenCookie(res, refreshToken);
     return res.status(201).send(userData);
   };
 
@@ -54,9 +53,7 @@ export class Controller {
 
     if (redirectLink) {
       return res.redirect(
-        !redirectLink.startsWith("http")
-          ? "http://" + redirectLink
-          : redirectLink,
+        !redirectLink.startsWith('http') ? 'http://' + redirectLink : redirectLink,
       );
     }
 
@@ -69,11 +66,7 @@ export class Controller {
 
   public login: RouteHandlerCustom<LoginType> = async (req, res) => {
     const { email, password } = req.body;
-    const { refreshToken, ...userData } = await this.userService.login(
-      email,
-      password,
-    );
-
+    const { refreshToken, ...userData } = await this.userService.login(email, password);
     this.setRefreshTokenCookie(res, refreshToken);
     return res.status(200).send(userData);
   };
@@ -97,21 +90,22 @@ export class Controller {
     return res.status(200).send(user);
   };
 
-  public forgotPassword: RouteHandlerCustom<ForgotPasswordType> = async (
-    req,
-    res,
-  ) => {
+  public forgotPassword: RouteHandlerCustom<ForgotPasswordType> = async (req, res) => {
     const { email, redirectUrl } = req.body;
     await this.userService.forgotPassword(email, redirectUrl);
     return res.status(200).send();
   };
 
-  public resetPassword: RouteHandlerCustom<ResetPasswordType> = async (
-    req,
-    res,
-  ) => {
+  public resetPassword: RouteHandlerCustom<ResetPasswordType> = async (req, res) => {
     const { password, uuid } = req.body;
     await this.userService.resetPassword(password, uuid);
+    res.status(200).send();
+  };
+
+  public logout: RouteHandlerCustom = async (req, res) => {
+    res.clearCookie(this.REFRESH_TOKEN_KEY);
+    const refreshToken = req.cookies[this.REFRESH_TOKEN_KEY] ?? '';
+    await this.userService.logout(refreshToken);
     res.status(200).send();
   };
 }

@@ -1,19 +1,17 @@
-import type { Sequelize } from "sequelize";
-import type { UserModel, TokenModel } from "../models";
-import type { Transporter } from "nodemailer";
-import type SMTPTransport from "nodemailer/lib/smtp-transport";
+import type { Sequelize } from 'sequelize';
+import type { UserModel, TokenModel, RoleModel } from '../models';
+import type { Transporter } from 'nodemailer';
+import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 
-declare module "fastify" {
+declare module 'fastify' {
   interface FastifyInstance {
     db: {
       sequelize: Sequelize;
       User: typeof UserModel;
       Token: typeof TokenModel;
+      Role: typeof RoleModel;
     };
-    transporter: Transporter<
-      SMTPTransport.SentMessageInfo,
-      SMTPTransport.Options
-    >;
+    transporter: Transporter<SMTPTransport.SentMessageInfo, SMTPTransport.Options>;
   }
 
   interface FastifyRequest {

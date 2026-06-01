@@ -13,7 +13,7 @@ export class ApiError<T> extends Error {
   }
 
   static UnauthorizedError() {
-    return new ApiError(401, "Пользователь не авторизован");
+    return new ApiError(401, 'Пользователь не авторизован');
   }
 
   static ForbiddenError(message: string) {
@@ -21,10 +21,14 @@ export class ApiError<T> extends Error {
   }
 
   static EmailServiceUnavailableError(message?: string) {
-    return new ApiError(503, message || "Почтовый сервис временно недоступен");
+    return new ApiError(503, message || 'Почтовый сервис временно недоступен');
   }
 
   static ValidationError(message?: string) {
-    return new ApiError(400, message || "Поля невалидны");
+    return new ApiError(400, message || 'Поля невалидны');
+  }
+
+  static NotFoundError(message?: string) {
+    return new ApiError(404, message || 'Данные не найдены в базе данных');
   }
 }
